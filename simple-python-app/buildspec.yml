@@ -1,0 +1,27 @@
+version: 0.2
+env:
+  parameter-store:
+    DOCKER_USERNAME: /my-app/docker-credentials/username
+    DOCKER_PASSWORD: /my-app/docker-credentials/password
+    DOCKER_URL: /my-app/docker-credentials/url
+    
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+  pre_build:
+    commands:
+      - echo "Installing dependencies..."
+      - pip install -r simple-python-app/requirements.txt --verbose
+  build:
+    commands:
+      - cd simple-python-app
+      - echo "Building docker image"
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.io
+      - docker build -t "$DOCKER_USERNAME/simple-python-flask-app:latest" .
+      - docker push "$DOCKER_USERNAME/simple-python-flask-app:latest"
+  post_build:
+    commands:
+      - echo "Build is successful"
+
